@@ -1,0 +1,102 @@
+blueprint:
+  name: Silent Night IR Heater Pack
+  description: >
+    Silent Night IR Heater Pack.
+    Infrared heater control with smart hysteresis designed to reduce
+    heater clicking noise caused by thermal expansion and contraction.
+    Optimized for bedrooms, elderly people and north-facing rooms.
+
+  domain: automation
+
+  input:
+    temperature_sensor:
+      name: Temperature Sensor
+      description: Select a high-resolution temperature sensor. 0.1 °C resolution is recommended.
+      selector:
+        entity:
+          domain: sensor
+
+    heater_switch:
+      name: Heater Switch
+      description: Select the smart plug or switch connected to the infrared heater.
+      selector:
+        entity:
+          domain: switch
+
+    temperature_on:
+      name: Heater ON Temperature
+      description: Heater turns ON when temperature drops below this value.
+      default: 21.7
+      selector:
+        number:
+          min: 15
+          max: 30
+          step: 0.1
+          mode: box
+          unit_of_measurement: "°C"
+
+    temperature_off:
+      name: Heater OFF Temperature
+      description: Heater turns OFF when temperature rises above this value.
+      default: 22.3
+      selector:
+        number:
+          min: 15
+          max: 30
+          step: 0.1
+          mode: box
+          unit_of_measurement: "°C"
+
+    start_time:
+      name: Start Time
+      description: Start time for Silent Night heating mode.
+      default: "22:00:00"
+      selector:
+        time:
+
+    end_time:
+      name: End Time
+      description: End time for Silent Night heating mode.
+      default: "08:00:00"
+      selector:
+        time:
+
+mode: single
+
+trigger:
+  - platform: time_pattern
+    minutes: "/10"
+
+condition:
+  - condition: or
+    conditions:
+      - condition: time
+        after: !input start_time
+      - condition: time
+        before: !input end_time
+
+action:
+  - choose:
+      - alias: Turn heater ON below selected temperature
+        conditions:
+          - condition: numeric_state
+            entity_id: !input temperature_sensor
+            below: !input temperature_on
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: !input heater_switch
+
+      - alias: Turn heater OFF above selected temperature
+        conditions:
+          - condition: numeric_state
+            entity_id: !input temperature_sensor
+            above: !input temperature_off
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: !input heater_switch
+  
+  
+
+     
