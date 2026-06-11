@@ -1,4 +1,5 @@
 # Silent Night IR Heater Pack for Home Assistant
+![Thermostat Dashboard](images/thermostat-dashboard.png)
 
 ### Developed by Darius Kisielius
 
