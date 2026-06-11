@@ -34,7 +34,11 @@ The automation turns the heater ON only when the temperature falls below the con
 This significantly reduces unnecessary switching cycles.
 
 ## Generic Thermostat Integration
+### Dashboard Example
 
+![Bedroom Thermostat Dashboard](images/bedroom-thermostat-dashboard.png)
+
+The custom hysteresis automation was integrated with Home Assistant Generic Thermostat to provide a user-friendly climate control interface, temperature history tracking and simple daily operation.
 To provide a user-friendly climate interface, the project was integrated with Home Assistant Generic Thermostat.
 
 Components used:
