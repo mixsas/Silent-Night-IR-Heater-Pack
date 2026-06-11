@@ -1,0 +1,41 @@
+alias: Silent Night IR Heater Pack v1.0
+description: >
+  Home Assistant automation for infrared heater control.
+  Designed to reduce unnecessary ON/OFF switching cycles and improve sleeping comfort
+  using precise temperature hysteresis.
+
+triggers:
+  - minutes: /10
+    trigger: time_pattern
+
+conditions:
+  - condition: or
+    conditions:
+      - condition: time
+        after: "22:00:00"
+      - condition: time
+        before: "08:00:00"
+
+actions:
+  - choose:
+      - alias: Turn heater ON below 21.7 °C
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.tz3000_ywagc4rj_ts0201_temperatura
+            below: 21.7
+        sequence:
+          - target:
+              entity_id: switch.aqara_wall_outlet_h2_eu
+            action: switch.turn_on
+
+      - alias: Turn heater OFF above 22.3 °C
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.tz3000_ywagc4rj_ts0201_temperatura
+            above: 22.3
+        sequence:
+          - target:
+              entity_id: switch.aqara_wall_outlet_h2_eu
+            action: switch.turn_off
+
+mode: single
