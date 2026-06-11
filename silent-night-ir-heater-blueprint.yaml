@@ -1,17 +1,17 @@
 blueprint:
   name: Silent Night IR Heater Pack
   description: >
-    Silent Night IR Heater Pack.
-    Infrared heater control with smart hysteresis designed to reduce
-    heater clicking noise caused by thermal expansion and contraction.
-    Optimized for bedrooms, elderly people and north-facing rooms.
+    Infrared heater control with smart hysteresis for Home Assistant.
+    Designed to reduce heater clicking noise caused by frequent ON/OFF cycles,
+    improve temperature stability and increase sleeping comfort.
+    Includes safe automatic heater shutdown outside the configured night time window.
 
   domain: automation
 
   input:
     temperature_sensor:
       name: Temperature Sensor
-      description: Select a high-resolution temperature sensor. 0.1 °C resolution is recommended.
+      description: Select the room temperature sensor. A 0.1 °C resolution sensor is recommended.
       selector:
         entity:
           domain: sensor
@@ -56,7 +56,7 @@ blueprint:
 
     end_time:
       name: End Time
-      description: End time for Silent Night heating mode.
+      description: End time for Silent Night heating mode. The heater will be turned OFF after this time window.
       default: "08:00:00"
       selector:
         time:
@@ -67,18 +67,36 @@ trigger:
   - platform: time_pattern
     minutes: "/10"
 
-condition:
-  - condition: or
-    conditions:
-      - condition: time
-        after: !input start_time
-      - condition: time
-        before: !input end_time
+  - platform: time
+    at: !input end_time
+
+condition: []
 
 action:
   - choose:
-      - alias: Turn heater ON below selected temperature
+      - alias: Turn heater OFF outside Silent Night time window
         conditions:
+          - condition: not
+            conditions:
+              - condition: or
+                conditions:
+                  - condition: time
+                    after: !input start_time
+                  - condition: time
+                    before: !input end_time
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: !input heater_switch
+
+      - alias: Turn heater ON below selected temperature during Silent Night time window
+        conditions:
+          - condition: or
+            conditions:
+              - condition: time
+                after: !input start_time
+              - condition: time
+                before: !input end_time
           - condition: numeric_state
             entity_id: !input temperature_sensor
             below: !input temperature_on
@@ -87,8 +105,14 @@ action:
             target:
               entity_id: !input heater_switch
 
-      - alias: Turn heater OFF above selected temperature
+      - alias: Turn heater OFF above selected temperature during Silent Night time window
         conditions:
+          - condition: or
+            conditions:
+              - condition: time
+                after: !input start_time
+              - condition: time
+                before: !input end_time
           - condition: numeric_state
             entity_id: !input temperature_sensor
             above: !input temperature_off
@@ -96,7 +120,7 @@ action:
           - service: switch.turn_off
             target:
               entity_id: !input heater_switch
-  
+    
   
 
      
